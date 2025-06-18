@@ -136,11 +136,6 @@ Beberapa metrik evaluasi yang digunakan untuk mengukur kinerja model adalah:
 - **Recall**: Kemampuan model untuk menemukan semua kasus positif (diabetes).
 - **F1-Score**: Harmonik rata-rata antara **precision** dan **recall**, sangat berguna ketika dataset tidak seimbang.
 
-Formula untuk **F1-Score**:
-\[
-F1 = 2 \times \frac{{\text{Precision} \times \text{Recall}}}{{\text{Precision} + \text{Recall}}}
-\]
-
 ### Hasil Evaluasi
 
 - **Model yang terbaik** berdasarkan **akurasi** dan **F1-score** adalah **Random Forest**, diikuti oleh **Logistic Regression** dan **SVM**.
