@@ -95,51 +95,91 @@ Berikut adalah ringkasan informasi mengenai kolom dan tipe data:
 
 ## Data Preparation
 
-Tahapan **data preparation** yang dilakukan adalah sebagai berikut:
+### Teknik dan Penjelasan
 
-1. **Deteksi dan Penanganan Outlier**:
+1. **Pemeriksaan nilai null dan duplikasi**  
+   - Hasil: Tidak ditemukan nilai null dan data duplikat.
 
-   - Menggunakan **IQR (Interquartile Range)** untuk mendeteksi dan menghapus outlier dari dataset agar model tidak terpengaruh oleh data ekstrem.
+2. **Deteksi dan penanganan outlier**  
+   - Metode: **Z-score** dengan threshold ±3.
+   - Tujuan: Menghindari pengaruh data ekstrem terhadap model.
 
-2. **SMOTE**:
+3. **Exploratory Data Analysis (EDA)**  
+   - Heatmap korelasi menunjukkan fitur yang paling berhubungan dengan diabetes: Glucose, BMI, dan Age.
 
-   - Dataset yang tidak seimbang (jumlah pasien dengan diabetes lebih sedikit daripada yang tidak) ditangani dengan **SMOTE (Synthetic Minority Over-sampling Technique)**, yang menambah sampel sintetis untuk kelas minoritas (diabetes).
+     ![image](https://github.com/user-attachments/assets/dc1d41e7-1486-48fa-98a9-03506e675d02)
 
-3. **Normalisasi**:
+   terlihat inight dari data heatmap diatas:
 
-   - Data dinormalisasi menggunakan **Min-Max Scaling** agar semua fitur berada dalam rentang yang sama (0 hingga 1), yang penting untuk algoritma berbasis jarak seperti **KNN** dan **SVM**.
+      - **Glucose** memiliki korelasi tertinggi dengan `Outcome` (**0.48**), menunjukkan bahwa kadar glukosa darah      merupakan prediktor kuat untuk diabetes.
+      - **BMI** dan **Age** juga memiliki korelasi moderat dengan `Outcome` masing-masing sebesar **0.30** dan **0.25**.
+      - Beberapa fitur seperti **SkinThickness**, **Insulin**, dan **DiabetesPedigreeFunction** memiliki korelasi lemah terhadap `Outcome` (nilai < 0.2).
+      - Fitur **Pregnancies** berkorelasi kuat dengan **Age** (**0.57**), yang wajar karena semakin tua usia, umumnya jumlah kehamilan meningkat.
 
-4. **Feature Selection**:
-   - Fitur yang tidak relevan dihapus dan fitur yang penting dipilih menggunakan **Recursive Feature Elimination (RFE)** untuk meningkatkan kinerja model.
+4. **SMOTE (Synthetic Minority Oversampling Technique)**  
+   - Mengatasi ketidakseimbangan kelas pada kolom `Outcome`.
+
+5. **Normalisasi**  
+   - Digunakan **MinMaxScaler** untuk menyamakan skala fitur (penting untuk KNN dan SVM).
+
+6. **Feature Selection**  
+   - Menggunakan **Recursive Feature Elimination (RFE)** untuk memilih 5 fitur terbaik.
+
+7. **Train-test split**  
+   - Data dibagi 80% train dan 20% test.
 
 ---
 
 ## Modeling
 
-Tahapan **pemodelan** yang dilakukan adalah:
+### Algoritma
 
-1. **Modeling dengan Logistic Regression, Random Forest, dan SVM**:
-   - Masing-masing model diterapkan untuk memprediksi risiko diabetes berdasarkan fitur yang ada. Kelebihan **Random Forest** adalah kemampuannya menangani dataset besar dan tidak terstruktur, sementara **SVM** efektif dalam klasifikasi data non-linear, dan **Logistic Regression** memberikan interpretasi yang mudah.
-2. **Hyperparameter Tuning**:
-   - **Random Forest** dan **SVM** di-tune menggunakan **GridSearchCV** untuk menemukan parameter terbaik (misalnya, jumlah pohon dalam Random Forest atau parameter kernel dalam SVM).
+- Logistic Regression
+- Random Forest
+- Support Vector Machine (SVM)
+- K-Nearest Neighbors (KNN)
+
+### Komparasi Model
+
+| Model               | Kelebihan                                                 | Kekurangan                                         |
+|--------------------|-----------------------------------------------------------|----------------------------------------------------|
+| Logistic Regression| Cepat, sederhana, interpretatif                           | Kurang untuk data non-linear                       |
+| Random Forest       | Tahan overfitting, bisa menangani fitur penting           | Interpretasi model lebih sulit                     |
+| SVM                 | Efektif pada data high-dimensional, non-linear            | Butuh tuning kernel, lambat untuk dataset besar    |
+| KNN                 | Sederhana, tidak membutuhkan pelatihan                    | Lambat untuk dataset besar, sensitif terhadap outlier |
 
 ---
 
 ## Evaluation
 
-### Metrik Evaluasi
+### Metrik yang Digunakan
 
-Beberapa metrik evaluasi yang digunakan untuk mengukur kinerja model adalah:
-
-- **Accuracy**: Persentase prediksi yang benar dari total prediksi.
-- **Precision**: Persentase prediksi yang benar untuk kelas positif (diabetes).
-- **Recall**: Kemampuan model untuk menemukan semua kasus positif (diabetes).
-- **F1-Score**: Harmonik rata-rata antara **precision** dan **recall**, sangat berguna ketika dataset tidak seimbang.
+- **Accuracy**: Rasio prediksi yang benar terhadap total.
+- **Precision**: Rasio prediksi positif yang benar.
+- **Recall**: Kemampuan model menangkap semua kelas positif.
+- **F1-Score**: Harmonik antara precision dan recall.
 
 ### Hasil Evaluasi
 
-- **Model yang terbaik** berdasarkan **akurasi** dan **F1-score** adalah **Random Forest**, diikuti oleh **Logistic Regression** dan **SVM**.
-- **Confusion Matrix** memberikan gambaran mengenai seberapa baik model mengklasifikasikan **diabetes** dan **tidak diabetes**.
+- **Model terbaik: Random Forest**
+  - Akurasi: 0.83
+  - Recall untuk diabetes: 0.86
+  - Precision: 0.83
+  - F1-score: 0.84
+
+### Confusion Matrix
+
+Confusion Matrix digunakan untuk mengevaluasi performa klasifikasi model terbaik (Random Forest) pada data uji. Matriks ini menunjukkan jumlah prediksi yang benar dan salah untuk setiap kelas.
+
+![image](https://github.com/user-attachments/assets/b3cdc6c6-6045-4153-a782-7655b4d05f65)
+
+sehingga didapat Interpretasi:
+- **True Positive (TP):** 86 pasien diabetes terprediksi benar → model mendeteksi diabetes secara akurat.
+- **True Negative (TN):** 67 pasien non-diabetes terprediksi benar.
+- **False Positive (FP):** 18 pasien non-diabetes salah diklasifikasikan sebagai diabetes.
+- **False Negative (FN):** 14 pasien diabetes tidak terdeteksi (diklasifikasikan sebagai non-diabetes).
+
+
 
 ---
 
