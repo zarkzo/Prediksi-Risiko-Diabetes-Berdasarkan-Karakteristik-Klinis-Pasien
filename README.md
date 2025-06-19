@@ -95,38 +95,90 @@ Berikut adalah ringkasan informasi mengenai kolom dan tipe data:
 
 ## Data Preparation
 
-### Teknik dan Penjelasan
+Tahapan **data preparation** dilakukan untuk meningkatkan kualitas data sebelum digunakan dalam pemodelan. Langkah-langkah ini bertujuan agar model machine learning yang dibangun dapat belajar dari data secara optimal dan tidak bias akibat data ekstrem, distribusi tidak seimbang, atau perbedaan skala antar fitur.
 
-1. **Pemeriksaan nilai null dan duplikasi**  
-   - Hasil: Tidak ditemukan nilai null dan data duplikat.
+---
 
-2. **Deteksi dan penanganan outlier**  
-   - Metode: **Z-score** dengan threshold ±3.
-   - Tujuan: Menghindari pengaruh data ekstrem terhadap model.
+### 1. Pembersihan Data
 
-3. **Exploratory Data Analysis (EDA)**  
-   - Heatmap korelasi menunjukkan fitur yang paling berhubungan dengan diabetes: Glucose, BMI, dan Age.
+- **Cek Nilai Kosong dan Duplikat**  
+  Dataset dicek untuk mengetahui apakah terdapat nilai kosong (`null`) atau data duplikat. Hasil pengecekan menunjukkan bahwa tidak ada nilai yang hilang dan tidak ditemukan data duplikat.
 
-     ![image](https://github.com/user-attachments/assets/dc1d41e7-1486-48fa-98a9-03506e675d02)
+---
 
-   terlihat inight dari data heatmap diatas:
+### 2. Deteksi dan Penghapusan Outlier (Z-Score)
 
-      - **Glucose** memiliki korelasi tertinggi dengan `Outcome` (**0.48**), menunjukkan bahwa kadar glukosa darah      merupakan prediktor kuat untuk diabetes.
-      - **BMI** dan **Age** juga memiliki korelasi moderat dengan `Outcome` masing-masing sebesar **0.30** dan **0.25**.
-      - Beberapa fitur seperti **SkinThickness**, **Insulin**, dan **DiabetesPedigreeFunction** memiliki korelasi lemah terhadap `Outcome` (nilai < 0.2).
-      - Fitur **Pregnancies** berkorelasi kuat dengan **Age** (**0.57**), yang wajar karena semakin tua usia, umumnya jumlah kehamilan meningkat.
+- **Metode**:  
+  Outlier dideteksi menggunakan **Z-score**, yaitu cara mengukur sejauh mana suatu nilai menyimpang dari rata-rata dalam satuan standar deviasi.  
+  Rumus Z-score:  
+  $Z = \frac{X - \mu}{\sigma}$
 
-4. **SMOTE (Synthetic Minority Oversampling Technique)**  
-   - Mengatasi ketidakseimbangan kelas pada kolom `Outcome`.
+  Di mana:
+  - \(X\): nilai fitur,
+  - \(\mu\): rata-rata fitur,
+  - \(\sigma\): standar deviasi fitur.
 
-5. **Normalisasi**  
-   - Digunakan **MinMaxScaler** untuk menyamakan skala fitur (penting untuk KNN dan SVM).
 
-6. **Feature Selection**  
-   - Menggunakan **Recursive Feature Elimination (RFE)** untuk memilih 5 fitur terbaik.
+- **Alasan Penggunaan Z-Score**:  
+  Z-score efektif untuk data yang terdistribusi mendekati normal dan dapat mengidentifikasi outlier secara sistematis.
 
-7. **Train-test split**  
-   - Data dibagi 80% train dan 20% test.
+- **Threshold**:  
+  Ambang batas yang digunakan adalah **Z > 3** atau **Z < -3**, artinya data yang menyimpang lebih dari 3 standar deviasi dari rata-rata dianggap sebagai outlier.
+
+- **Tujuan Penghapusan Outlier**:  
+  Menghapus data yang sangat ekstrem untuk **mengurangi noise** dan **mencegah model menjadi bias** terhadap nilai-nilai yang tidak representatif terhadap populasi data.
+
+---
+
+### 3. Menyeimbangkan Kelas Target (SMOTE)
+
+- **Masalah**:  
+  Dataset awal memiliki distribusi target yang tidak seimbang, yaitu jumlah pasien tanpa diabetes jauh lebih banyak dibandingkan yang menderita diabetes.
+
+- **Solusi**:  
+  Menggunakan **SMOTE (Synthetic Minority Over-sampling Technique)** untuk **menyeimbangkan jumlah kelas** dengan menambahkan data sintetis pada kelas minoritas.
+
+- **Tujuan**:  
+  Meningkatkan kemampuan model dalam mengenali kelas minoritas (positif diabetes) dan **mengurangi bias terhadap kelas mayoritas**.
+
+---
+
+### 4. Normalisasi Fitur (MinMaxScaler)
+
+- **Alasan**:  
+  Beberapa algoritma seperti **KNN dan SVM** sensitif terhadap skala data, sehingga diperlukan normalisasi agar semua fitur berada dalam rentang yang sama.
+
+- **Metode**:  
+  Digunakan **Min-Max Scaling** untuk mengubah nilai fitur ke dalam rentang **0 hingga 1**.
+
+  Rumus Min-Max Scaling:  
+  $X_{\text{scaled}} = \frac{X - X_{\min}}{X_{\max} - X_{\min}}$
+
+- **Tujuan**:  
+  Menyamakan skala antar fitur agar **jarak antar titik data tidak didominasi oleh fitur dengan skala besar**.
+
+---
+
+### 5. Seleksi Fitur (Recursive Feature Elimination - RFE)
+
+- **Metode**:  
+  Digunakan **RFE (Recursive Feature Elimination)** dengan model **Logistic Regression** sebagai estimator untuk memilih **5 fitur terbaik** yang paling berkontribusi terhadap target.
+
+- **Tujuan**:  
+  Mengurangi kompleksitas model, meningkatkan performa, dan menghindari overfitting dengan menghilangkan fitur yang kurang relevan.
+
+---
+
+### Kesimpulan Tahapan
+
+Setiap tahapan pada data preparation memiliki peran penting:
+- **Membersihkan data** dari noise dan duplikasi.
+- **Mengatasi outlier** agar distribusi data tetap konsisten.
+- **Menyeimbangkan kelas target** untuk menghindari bias model.
+- **Normalisasi** agar algoritma berbasis jarak bekerja optimal.
+- **Seleksi fitur** agar model lebih efisien dan akurat.
+
+Seluruh tahapan dilakukan **berurutan dan konsisten dengan notebook**, sehingga data siap digunakan dalam proses modeling secara optimal.
 
 ---
 
@@ -141,12 +193,12 @@ Berikut adalah ringkasan informasi mengenai kolom dan tipe data:
 
 ### Komparasi Model
 
-| Model               | Kelebihan                                                 | Kekurangan                                         |
-|--------------------|-----------------------------------------------------------|----------------------------------------------------|
-| Logistic Regression| Cepat, sederhana, interpretatif                           | Kurang untuk data non-linear                       |
-| Random Forest       | Tahan overfitting, bisa menangani fitur penting           | Interpretasi model lebih sulit                     |
-| SVM                 | Efektif pada data high-dimensional, non-linear            | Butuh tuning kernel, lambat untuk dataset besar    |
-| KNN                 | Sederhana, tidak membutuhkan pelatihan                    | Lambat untuk dataset besar, sensitif terhadap outlier |
+| Algoritma | Mekanisme | Hyperparameter Default Penting | Kelebihan | Kekurangan |
+|----------|-----------|------------------------------|-----------|------------|
+| **Logistic Regression** | Model klasifikasi linier yang memprediksi probabilitas kelas menggunakan fungsi logistik (sigmoid). Cocok untuk memodelkan hubungan linier antara fitur dan target. | `penalty='l2'`, `C=1.0`, `solver='lbfgs'`, `max_iter=100` | Cepat, sederhana, mudah diinterpretasi | Kurang efektif untuk data non-linear |
+| **Random Forest** | Ensemble dari banyak decision tree. Hasil prediksi ditentukan berdasarkan mayoritas voting dari pohon-pohon tersebut. | `n_estimators=100`, `criterion='gini'`, `max_depth=None`, `random_state=None` | Tahan terhadap overfitting, kuat untuk data kompleks | Interpretasi lebih rumit, waktu pelatihan lebih lama |
+| **SVM (Support Vector Machine)** | Mencari hyperplane optimal yang memisahkan kelas dengan margin maksimum. Menggunakan kernel untuk menangani data non-linear. | `kernel='rbf'`, `C=1.0`, `gamma='scale'` | Efektif untuk data high-dimensional, performa tinggi pada klasifikasi | Tidak efisien pada data besar, sensitif terhadap scaling dan parameter |
+| **K-Nearest Neighbors (KNN)** | Mengklasifikasikan data berdasarkan mayoritas label dari k tetangga terdekat (berdasarkan jarak Euclidean). | `n_neighbors=5`, `weights='uniform'`, `metric='minkowski'`, `p=2` | Sederhana, mudah dipahami | Boros memori, lambat untuk data besar, sensitif terhadap outlier |
 
 ---
 
@@ -174,12 +226,11 @@ Confusion Matrix digunakan untuk mengevaluasi performa klasifikasi model terbaik
 ![image](https://github.com/user-attachments/assets/b3cdc6c6-6045-4153-a782-7655b4d05f65)
 
 sehingga didapat Interpretasi:
+
 - **True Positive (TP):** 86 pasien diabetes terprediksi benar → model mendeteksi diabetes secara akurat.
 - **True Negative (TN):** 67 pasien non-diabetes terprediksi benar.
 - **False Positive (FP):** 18 pasien non-diabetes salah diklasifikasikan sebagai diabetes.
 - **False Negative (FN):** 14 pasien diabetes tidak terdeteksi (diklasifikasikan sebagai non-diabetes).
-
-
 
 ---
 
